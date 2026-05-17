@@ -1,0 +1,113 @@
+<Window x:Class="MedicalCenter.Views.DoctorsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Наши врачи"
+        Width="960" Height="640"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel Background="{DynamicResource BgDarkBrush}">
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource BgPanelBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="20,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Наши врачи" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="Выберите специалиста и запишитесь на приём" FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+                <Grid Grid.Column="1" Margin="24,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Grid.Column="0"
+                              ItemsSource="{Binding Specializations}"
+                              SelectedItem="{Binding SelectedSpecialization, Mode=TwoWay}"
+                              Background="{DynamicResource BgCardBrush}"
+                              Foreground="{DynamicResource TextPrimaryBrush}"
+                              BorderBrush="{DynamicResource BorderBrush}"/>
+                    <TextBox Grid.Column="2"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="8,4"
+                             FontSize="13"
+                             ToolTip="Поиск по имени врача или специализации"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+            <ItemsControl ItemsSource="{Binding Doctors}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="280" Height="220" Margin="8"
+                                Background="{DynamicResource BgCardBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10">
+                            <Grid Margin="14">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <Border Width="42" Height="42" CornerRadius="21"
+                                            Background="{DynamicResource GhostHoverBrush}"
+                                            Margin="0,0,10,0">
+                                        <TextBlock Text="👨‍⚕️" FontSize="22"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FullName}"
+                                                   FontSize="14" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Specialization}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource AccentBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
+                                    <TextBlock Text="Стаж: " FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}">
+                                        <Run Text="{Binding ExperienceYears}"/>
+                                        <Run Text="лет"/>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="2" Text="{Binding Description}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,8,0,8"
+                                           TextTrimming="WordEllipsis"/>
+
+                                <Button Grid.Row="3" Content="Записаться"
+                                        Style="{StaticResource BaseButtonStyle}"
+                                        HorizontalAlignment="Right"
+                                        Command="{Binding DataContext.BookDoctorCommand,
+                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</Window>
