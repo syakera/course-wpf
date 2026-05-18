@@ -174,10 +174,32 @@
                     </Button>
 
                     <!-- Appointments -->
-                    <Button Content="Записи"
-                            Style="{StaticResource GhostButtonStyle}"
-                            Command="{Binding OpenAppointmentsCommand}"
-                            Margin="0,0,6,0"/>
+                    <Grid Margin="0,0,6,0">
+                        <Button Content="Записи"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Command="{Binding OpenAppointmentsCommand}"/>
+                        <Ellipse Width="10"
+                                 Height="10"
+                                 Fill="#E53935"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Top"
+                                 Margin="0,-2,-2,0">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsPatient}" Value="True"/>
+                                                <Condition Binding="{Binding HasUnreadAppointmentStatusNotification}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                    </Grid>
 
                     <!-- DB tables (admin only) -->
                     <Button Content="Таблицы БД"

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using MedicalCenter.Data.Entities;
 using MedicalCenter.Data.UnitOfWork;
 using MedicalCenter.Models;
+using MedicalCenter.Services.Notifications;
 
 namespace MedicalCenter.Services
 {
@@ -445,10 +446,16 @@ namespace MedicalCenter.Services
 
         public Task UpdateAppointmentStatusAsync(int appointmentId, string status)
         {
-            return UpdateAppointmentStatusAsync(appointmentId, status, false);
+            return UpdateAppointmentStatusAsync(appointmentId, status, UserRole.Patient);
         }
 
         public async Task UpdateAppointmentStatusAsync(int appointmentId, string status, bool isAdmin)
+        {
+            var role = isAdmin ? UserRole.Admin : UserRole.Doctor;
+            await UpdateAppointmentStatusAsync(appointmentId, status, role).ConfigureAwait(false);
+        }
+
+        public async Task UpdateAppointmentStatusAsync(int appointmentId, string status, UserRole changedByRole)
         {
             using (var uow = CreateUnitOfWork())
             using (var tx = uow.BeginTransaction())
@@ -462,6 +469,19 @@ namespace MedicalCenter.Services
                     {
                         entity.Status = string.IsNullOrWhiteSpace(status) ? "Ожидает" : status;
                         await uow.SaveChangesAsync().ConfigureAwait(false);
+
+                        if (changedByRole == UserRole.Admin || changedByRole == UserRole.Doctor)
+                        {
+                            AppointmentStatusSubject.Instance.Notify(new AppointmentStatusChangedEvent
+                            {
+                                AppointmentId = entity.Id,
+                                PatientName = entity.PatientName,
+                                PatientPhone = entity.PatientPhone,
+                                NewStatus = entity.Status,
+                                ChangedAt = DateTime.Now,
+                                ChangedByRole = changedByRole
+                            });
+                        }
                     }
 
                     tx.Commit();

@@ -100,6 +100,7 @@
     <Compile Include="Services\DatabaseInitializer.cs" />
     <Compile Include="Services\DoctorManagementService.cs" />
     <Compile Include="Services\MedicalServiceService.cs" />
+    <Compile Include="Services\Notifications\AppointmentStatusSubject.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>

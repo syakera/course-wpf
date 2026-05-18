@@ -10,11 +10,12 @@ using System.Windows.Input;
 using MedicalCenter.Commands;
 using MedicalCenter.Models;
 using MedicalCenter.Services;
+using MedicalCenter.Services.Notifications;
 using MedicalCenter.Views;
 
 namespace MedicalCenter.ViewModels
 {
-    public class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : INotifyPropertyChanged, IObserver<AppointmentStatusChangedEvent>
     {
         private const string AllCategoriesKey = "__all__";
         private const int MaxUndoSteps = 30;
@@ -49,6 +50,8 @@ namespace MedicalCenter.ViewModels
         private readonly Stack<SnapshotAction> _undoStack = new Stack<SnapshotAction>();
         private readonly Stack<SnapshotAction> _redoStack = new Stack<SnapshotAction>();
         private readonly UserAccount _currentAccount;
+        private readonly IDisposable _statusSubscription;
+        private bool _hasUnreadAppointmentStatusNotification;
 
         private sealed class SnapshotAction
         {
@@ -145,6 +148,16 @@ namespace MedicalCenter.ViewModels
         public string CurrentUserName => _currentUser?.FullName ?? "";
         public string CurrentUserAvatarPath => _currentUser?.AvatarPath;
         public bool HasCurrentUserAvatar => !string.IsNullOrWhiteSpace(CurrentUserAvatarPath);
+        public bool HasUnreadAppointmentStatusNotification
+        {
+            get => _hasUnreadAppointmentStatusNotification;
+            private set
+            {
+                if (_hasUnreadAppointmentStatusNotification == value) return;
+                _hasUnreadAppointmentStatusNotification = value;
+                OnPropertyChanged(nameof(HasUnreadAppointmentStatusNotification));
+            }
+        }
         public bool CanUndo => _undoStack.Count > 0;
         public bool CanRedo => _redoStack.Count > 0;
 
@@ -192,6 +205,9 @@ namespace MedicalCenter.ViewModels
                 Email = _currentAccount.Email ?? string.Empty,
                 AvatarPath = _currentAccount.AvatarPath
             };
+
+            if (IsPatient)
+                _statusSubscription = AppointmentStatusSubject.Instance.Subscribe(this);
 
             AddCommand = new RelayCommand(_ => OpenAddWindow(), _ => IsAdmin);
             EditCommand = new RelayCommand(s => OpenEditWindow(s as MedicalService), s => s != null && IsAdmin);
@@ -535,6 +551,7 @@ namespace MedicalCenter.ViewModels
             var win = new AppointmentsWindow(_currentAccount);
             AttachSafeOwner(win);
             win.ShowDialog();
+            HasUnreadAppointmentStatusNotification = false;
             await Task.Delay(10);
             LoadUpcomingAppointment();
         }
@@ -622,5 +639,56 @@ namespace MedicalCenter.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        public void OnNext(AppointmentStatusChangedEvent value)
+        {
+            if (!IsPatient || value == null)
+                return;
+
+            if (value.ChangedByRole != UserRole.Admin && value.ChangedByRole != UserRole.Doctor)
+                return;
+
+            var phone = NormalizePhone(_currentUser?.Phone);
+            var eventPhone = NormalizePhone(value.PatientPhone);
+            var name = NormalizeText(_currentUser?.FullName);
+            var eventName = NormalizeText(value.PatientName);
+
+            bool byPhone = !string.IsNullOrWhiteSpace(phone) && phone == eventPhone;
+            bool byName = !string.IsNullOrWhiteSpace(name) && name == eventName;
+
+            if (byPhone || byName)
+            {
+                if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+                {
+                    Application.Current.Dispatcher.Invoke(() => HasUnreadAppointmentStatusNotification = true);
+                }
+                else
+                {
+                    HasUnreadAppointmentStatusNotification = true;
+                }
+            }
+        }
+
+        public void OnError(Exception error)
+        {
+        }
+
+        public void OnCompleted()
+        {
+        }
+
+        private static string NormalizePhone(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return string.Empty;
+
+            var chars = phone.Where(char.IsDigit).ToArray();
+            return new string(chars);
+        }
+
+        private static string NormalizeText(string text)
+        {
+            return (text ?? string.Empty).Trim().ToUpperInvariant();
+        }
     }
 }

@@ -108,7 +108,7 @@ namespace MedicalCenter.ViewModels
                 PatientName   = SelectedAppointment.PatientName
             };
 
-            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, newStatus).ConfigureAwait(true);
+            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, newStatus, UserRole.Doctor).ConfigureAwait(true);
 
             _undoStack.Push(change);
             _redoStack.Clear();
@@ -131,7 +131,7 @@ namespace MedicalCenter.ViewModels
                 return;
             }
 
-            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, change.OldStatus).ConfigureAwait(true);
+            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, change.OldStatus, UserRole.Doctor).ConfigureAwait(true);
             _redoStack.Push(change);
             NotifyUndoRedo();
             await LoadAsync().ConfigureAwait(true);
@@ -151,7 +151,7 @@ namespace MedicalCenter.ViewModels
                 return;
             }
 
-            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, change.NewStatus).ConfigureAwait(true);
+            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, change.NewStatus, UserRole.Doctor).ConfigureAwait(true);
             _undoStack.Push(change);
             NotifyUndoRedo();
             await LoadAsync().ConfigureAwait(true);

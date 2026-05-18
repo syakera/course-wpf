@@ -260,7 +260,8 @@ namespace MedicalCenter.ViewModels
 
             try
             {
-                await _service.UpdateAppointmentStatusAsync(SelectedAppointment.Id, status, IsAdmin).ConfigureAwait(true);
+                var changedByRole = IsAdmin ? UserRole.Admin : UserRole.Doctor;
+                await _service.UpdateAppointmentStatusAsync(SelectedAppointment.Id, status, changedByRole).ConfigureAwait(true);
             }
             catch (InvalidOperationException ex)
             {
