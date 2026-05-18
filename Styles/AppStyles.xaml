@@ -7,6 +7,8 @@
     <Style x:Key="ThemedWindowStyle" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource BgDarkBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="Icon" Value="/Assets/MedCenter.ico"/>
+        <Setter Property="Cursor" Value="/Assets/arrow.cur"/>
     </Style>
     <Style TargetType="Window" BasedOn="{StaticResource ThemedWindowStyle}"/>
 
@@ -374,12 +376,16 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="28"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="SelectionText"
-                                           Grid.Column="0"
-                                           Text="{TemplateBinding SelectionBoxItem}"
-                                           Margin="{TemplateBinding Padding}"
-                                           VerticalAlignment="Center"
-                                           TextTrimming="CharacterEllipsis"/>
+                                <ContentPresenter x:Name="SelectionContent"
+                                                  Grid.Column="0"
+                                                  Margin="{TemplateBinding Padding}"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Left"
+                                                  Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                  IsHitTestVisible="False"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}"/>
                                 <ToggleButton x:Name="ToggleButton"
                                               Grid.Column="1"
                                               Focusable="False"

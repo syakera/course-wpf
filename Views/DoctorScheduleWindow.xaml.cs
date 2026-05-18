@@ -9,6 +9,21 @@ namespace MedicalCenter.Views
         {
             InitializeComponent();
             DataContext = new DoctorScheduleViewModel(doctorName);
+            Closing += DoctorScheduleWindow_Closing;
+        }
+
+        private void DoctorScheduleWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var vm = DataContext as DoctorScheduleViewModel;
+            if (vm != null && vm.IsBusy)
+            {
+                e.Cancel = true;
+                MessageBox.Show(
+                    "Дождитесь завершения текущей операции сохранения.",
+                    "Сохранение данных",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
         }
     }
 }

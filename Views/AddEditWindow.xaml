@@ -2,6 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Width="657" Height="750"
+        Icon="/Assets/MedCenter.ico"
+        Cursor="/Assets/arrow.cur"
         MinWidth="500" MinHeight="650"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResizeWithGrip">

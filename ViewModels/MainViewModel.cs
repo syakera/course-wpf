@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using MedicalCenter.Commands;
 using MedicalCenter.Models;
 using MedicalCenter.Services;
@@ -51,7 +53,10 @@ namespace MedicalCenter.ViewModels
         private readonly Stack<SnapshotAction> _redoStack = new Stack<SnapshotAction>();
         private readonly UserAccount _currentAccount;
         private readonly IDisposable _statusSubscription;
+        private readonly DispatcherTimer _patientStatusPollingTimer;
+        private Dictionary<int, string> _knownPatientStatuses = new Dictionary<int, string>();
         private bool _hasUnreadAppointmentStatusNotification;
+        private readonly string _patientStatusSnapshotPath;
 
         private sealed class SnapshotAction
         {
@@ -207,7 +212,14 @@ namespace MedicalCenter.ViewModels
             };
 
             if (IsPatient)
+            {
                 _statusSubscription = AppointmentStatusSubject.Instance.Subscribe(this);
+                _patientStatusSnapshotPath = BuildPatientStatusSnapshotPath();
+                _knownPatientStatuses = GetCurrentPatientStatuses();
+                _patientStatusPollingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+                _patientStatusPollingTimer.Tick += (_, __) => PollPatientStatusChanges();
+                _patientStatusPollingTimer.Start();
+            }
 
             AddCommand = new RelayCommand(_ => OpenAddWindow(), _ => IsAdmin);
             EditCommand = new RelayCommand(s => OpenEditWindow(s as MedicalService), s => s != null && IsAdmin);
@@ -234,6 +246,7 @@ namespace MedicalCenter.ViewModels
             RebuildCategories();
             ApplyFilters();
             LoadUpcomingAppointment();
+            InitializePatientNotificationState();
 
             App.LanguageChanged += () =>
             {
@@ -552,6 +565,8 @@ namespace MedicalCenter.ViewModels
             AttachSafeOwner(win);
             win.ShowDialog();
             HasUnreadAppointmentStatusNotification = false;
+            _knownPatientStatuses = GetCurrentPatientStatuses();
+            SaveCurrentPatientStatusSnapshot();
             await Task.Delay(10);
             LoadUpcomingAppointment();
         }
@@ -655,8 +670,9 @@ namespace MedicalCenter.ViewModels
 
             bool byPhone = !string.IsNullOrWhiteSpace(phone) && phone == eventPhone;
             bool byName = !string.IsNullOrWhiteSpace(name) && name == eventName;
+            bool byAppointment = IsAppointmentOwnedByCurrentPatient(value.AppointmentId);
 
-            if (byPhone || byName)
+            if (byPhone || byName || byAppointment)
             {
                 if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
                 {
@@ -683,12 +699,185 @@ namespace MedicalCenter.ViewModels
                 return string.Empty;
 
             var chars = phone.Where(char.IsDigit).ToArray();
-            return new string(chars);
+            var digits = new string(chars);
+
+            // Compare by the stable local part to avoid mismatches like +7/8 prefixes.
+            if (digits.Length > 10)
+                digits = digits.Substring(digits.Length - 10);
+
+            return digits;
         }
 
         private static string NormalizeText(string text)
         {
             return (text ?? string.Empty).Trim().ToUpperInvariant();
+        }
+
+        private bool IsAppointmentOwnedByCurrentPatient(int appointmentId)
+        {
+            if (appointmentId <= 0)
+                return false;
+
+            try
+            {
+                var patientKey = string.IsNullOrWhiteSpace(_currentUser?.Phone)
+                    ? _currentUser?.FullName
+                    : _currentUser.Phone;
+
+                if (string.IsNullOrWhiteSpace(patientKey))
+                    return false;
+
+                var appointments = _service.GetAppointmentsForPatientAsync(patientKey).GetAwaiter().GetResult();
+                return appointments.Any(a => a.Id == appointmentId);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void InitializePatientNotificationState()
+        {
+            if (!IsPatient)
+                return;
+
+            try
+            {
+                var current = GetCurrentPatientStatuses();
+                var saved = LoadPatientStatusSnapshot();
+
+                if (saved.Count == 0)
+                {
+                    SavePatientStatusSnapshot(current);
+                    HasUnreadAppointmentStatusNotification = false;
+                    return;
+                }
+
+                HasUnreadAppointmentStatusNotification = HasStatusChanges(saved, current);
+            }
+            catch
+            {
+                HasUnreadAppointmentStatusNotification = false;
+            }
+        }
+
+        private void PollPatientStatusChanges()
+        {
+            if (!IsPatient)
+                return;
+
+            try
+            {
+                var current = GetCurrentPatientStatuses();
+                if (HasStatusChanges(_knownPatientStatuses, current))
+                {
+                    HasUnreadAppointmentStatusNotification = true;
+                }
+
+                _knownPatientStatuses = current;
+            }
+            catch
+            {
+                // polling failures should not break UI
+            }
+        }
+
+        private void SaveCurrentPatientStatusSnapshot()
+        {
+            if (!IsPatient)
+                return;
+
+            try
+            {
+                SavePatientStatusSnapshot(GetCurrentPatientStatuses());
+            }
+            catch
+            {
+                // keep UI responsive even if snapshot saving fails
+            }
+        }
+
+        private Dictionary<int, string> GetCurrentPatientStatuses()
+        {
+            var patientKey = string.IsNullOrWhiteSpace(_currentUser?.Phone)
+                ? _currentUser?.FullName
+                : _currentUser.Phone;
+
+            if (string.IsNullOrWhiteSpace(patientKey))
+                return new Dictionary<int, string>();
+
+            var appointments = _service.GetAppointmentsForPatientAsync(patientKey).GetAwaiter().GetResult();
+            return appointments.ToDictionary(a => a.Id, a => NormalizeText(a.Status));
+        }
+
+        private static bool HasStatusChanges(Dictionary<int, string> previous, Dictionary<int, string> current)
+        {
+            foreach (var item in current)
+            {
+                if (previous.TryGetValue(item.Key, out var oldStatus) &&
+                    NormalizeText(oldStatus) != NormalizeText(item.Value))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private Dictionary<int, string> LoadPatientStatusSnapshot()
+        {
+            var result = new Dictionary<int, string>();
+            if (string.IsNullOrWhiteSpace(_patientStatusSnapshotPath) || !File.Exists(_patientStatusSnapshotPath))
+                return result;
+
+            foreach (var line in File.ReadAllLines(_patientStatusSnapshotPath))
+            {
+                var parts = line.Split(new[] { '|' }, 2);
+                if (parts.Length != 2)
+                    continue;
+
+                if (!int.TryParse(parts[0], out var id))
+                    continue;
+
+                result[id] = NormalizeText(parts[1]);
+            }
+
+            return result;
+        }
+
+        private void SavePatientStatusSnapshot(Dictionary<int, string> statuses)
+        {
+            if (string.IsNullOrWhiteSpace(_patientStatusSnapshotPath))
+                return;
+
+            var directory = Path.GetDirectoryName(_patientStatusSnapshotPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
+
+            var lines = statuses
+                .OrderBy(x => x.Key)
+                .Select(x => $"{x.Key}|{NormalizeText(x.Value)}")
+                .ToArray();
+
+            File.WriteAllLines(_patientStatusSnapshotPath, lines);
+        }
+
+        private string BuildPatientStatusSnapshotPath()
+        {
+            var baseDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "MedicalCenter");
+
+            var userKey = NormalizeText(_currentUser?.Phone);
+            if (string.IsNullOrWhiteSpace(userKey))
+                userKey = NormalizeText(_currentUser?.Username);
+            if (string.IsNullOrWhiteSpace(userKey))
+                userKey = NormalizeText(_currentUser?.FullName);
+            if (string.IsNullOrWhiteSpace(userKey))
+                userKey = "patient";
+
+            var safeKey = new string(userKey.Select(ch => Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch).ToArray());
+            return Path.Combine(baseDir, $"status-snapshot-{safeKey}.txt");
         }
     }
 }

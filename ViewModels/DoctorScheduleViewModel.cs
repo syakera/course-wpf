@@ -17,6 +17,7 @@ namespace MedicalCenter.ViewModels
     {
         private readonly MedicalServiceService _service = new MedicalServiceService();
         private readonly string _doctorName;
+        private bool _isBusy;
 
         // ── Undo / Redo stacks ────────────────────────────────────────────
         private struct StatusChange
@@ -32,6 +33,19 @@ namespace MedicalCenter.ViewModels
 
         public bool CanUndo => _undoStack.Count > 0;
         public bool CanRedo => _redoStack.Count > 0;
+        public bool IsBusy
+        {
+            get => _isBusy;
+            private set
+            {
+                if (_isBusy == value)
+                    return;
+
+                _isBusy = value;
+                OnPropertyChanged(nameof(IsBusy));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
 
         // ─────────────────────────────────────────────────────────────────
 
@@ -72,13 +86,13 @@ namespace MedicalCenter.ViewModels
         public DoctorScheduleViewModel(string doctorName)
         {
             _doctorName = string.IsNullOrWhiteSpace(doctorName) ? "Врач" : doctorName;
-            RefreshCommand        = new AsyncRelayCommand(async _ => await LoadAsync());
-            MarkCompletedCommand  = new AsyncRelayCommand(async _ => await UpdateStatusAsync("Завершена"),  _ => SelectedAppointment != null);
-            MarkNoShowCommand     = new AsyncRelayCommand(async _ => await UpdateStatusAsync("Не явился"),  _ => SelectedAppointment != null);
+            RefreshCommand        = new AsyncRelayCommand(async _ => await LoadAsync(), _ => !IsBusy);
+            MarkCompletedCommand  = new AsyncRelayCommand(async _ => await UpdateStatusAsync("Завершена"),  _ => SelectedAppointment != null && !IsBusy);
+            MarkNoShowCommand     = new AsyncRelayCommand(async _ => await UpdateStatusAsync("Не явился"),  _ => SelectedAppointment != null && !IsBusy);
             AddPrescriptionCommand = new AsyncRelayCommand(async _ => await AddPrescriptionAsync(),
-                _ => SelectedAppointment != null && SelectedAppointment.Status == "Завершена");
-            UndoCommand = new AsyncRelayCommand(async _ => await UndoAsync(), _ => CanUndo);
-            RedoCommand = new AsyncRelayCommand(async _ => await RedoAsync(), _ => CanRedo);
+                _ => SelectedAppointment != null && SelectedAppointment.Status == "Завершена" && !IsBusy);
+            UndoCommand = new AsyncRelayCommand(async _ => await UndoAsync(), _ => CanUndo && !IsBusy);
+            RedoCommand = new AsyncRelayCommand(async _ => await RedoAsync(), _ => CanRedo && !IsBusy);
             _ = LoadAsync();
         }
 
@@ -108,7 +122,15 @@ namespace MedicalCenter.ViewModels
                 PatientName   = SelectedAppointment.PatientName
             };
 
-            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, newStatus, UserRole.Doctor).ConfigureAwait(true);
+            IsBusy = true;
+            try
+            {
+                await _service.UpdateAppointmentStatusAsync(change.AppointmentId, newStatus, UserRole.Doctor).ConfigureAwait(true);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
 
             _undoStack.Push(change);
             _redoStack.Clear();
@@ -131,7 +153,15 @@ namespace MedicalCenter.ViewModels
                 return;
             }
 
-            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, change.OldStatus, UserRole.Doctor).ConfigureAwait(true);
+            IsBusy = true;
+            try
+            {
+                await _service.UpdateAppointmentStatusAsync(change.AppointmentId, change.OldStatus, UserRole.Doctor).ConfigureAwait(true);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
             _redoStack.Push(change);
             NotifyUndoRedo();
             await LoadAsync().ConfigureAwait(true);
@@ -151,7 +181,15 @@ namespace MedicalCenter.ViewModels
                 return;
             }
 
-            await _service.UpdateAppointmentStatusAsync(change.AppointmentId, change.NewStatus, UserRole.Doctor).ConfigureAwait(true);
+            IsBusy = true;
+            try
+            {
+                await _service.UpdateAppointmentStatusAsync(change.AppointmentId, change.NewStatus, UserRole.Doctor).ConfigureAwait(true);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
             _undoStack.Push(change);
             NotifyUndoRedo();
             await LoadAsync().ConfigureAwait(true);
@@ -173,8 +211,16 @@ namespace MedicalCenter.ViewModels
             if (string.IsNullOrWhiteSpace(text))
                 return;
 
-            await _service.AddMedicalNoteAsync(SelectedAppointment.Id, "Назначение", text.Trim(), _doctorName)
-                .ConfigureAwait(true);
+            IsBusy = true;
+            try
+            {
+                await _service.AddMedicalNoteAsync(SelectedAppointment.Id, "Назначение", text.Trim(), _doctorName)
+                    .ConfigureAwait(true);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
             MessageBox.Show("Назначение сохранено.", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

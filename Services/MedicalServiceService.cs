@@ -180,6 +180,56 @@ namespace MedicalCenter.Services
                     if (busy)
                         throw new InvalidOperationException("Этот слот уже занят. Выберите другое время.");
 
+                    var sameTimeAppointments = await uow.Appointments
+                        .Query()
+                        .Where(a => a.AppointmentDate == appointment.AppointmentDate.Date
+                                    && a.AppointmentTime == appointment.Time
+                                    && a.Status != "Отменена"
+                                    && a.Status != "Завершена"
+                                    && a.Status != "Не явился")
+                        .Select(a => new
+                        {
+                            a.PatientName,
+                            a.PatientPhone
+                        })
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    bool hasPatientConflict = sameTimeAppointments.Any(a =>
+                        IsSamePatient(a.PatientPhone, a.PatientName, appointment.PatientPhone, appointment.PatientName));
+                    if (hasPatientConflict)
+                    {
+                        throw new InvalidOperationException(
+                            "У вас уже есть незавершенная запись на это время. Выберите другое время или завершите текущий прием.");
+                    }
+
+                    var doctorName = (appointment.Doctor ?? string.Empty).Trim();
+                    if (!string.IsNullOrWhiteSpace(doctorName))
+                    {
+                        var sameDoctorSameDayAppointments = await uow.Appointments
+                            .Query()
+                            .Where(a => a.AppointmentDate == appointment.AppointmentDate.Date
+                                        && a.DoctorName == doctorName
+                                        && a.Status != "Отменена"
+                                        && a.Status != "Завершена"
+                                        && a.Status != "Не явился")
+                            .Select(a => new
+                            {
+                                a.PatientName,
+                                a.PatientPhone
+                            })
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+
+                        bool hasSameDoctorSameDayConflict = sameDoctorSameDayAppointments.Any(a =>
+                            IsSamePatient(a.PatientPhone, a.PatientName, appointment.PatientPhone, appointment.PatientName));
+                        if (hasSameDoctorSameDayConflict)
+                        {
+                            throw new InvalidOperationException(
+                                "У вас уже есть незавершенная запись к этому врачу на выбранную дату. Выберите другую дату или сначала завершите текущий прием.");
+                        }
+                    }
+
                     var entity = new AppointmentEntity
                     {
                         ServiceId = appointment.ServiceId,
@@ -187,7 +237,7 @@ namespace MedicalCenter.Services
                         PatientPhone = appointment.PatientPhone ?? string.Empty,
                         AppointmentDate = appointment.AppointmentDate.Date,
                         AppointmentTime = appointment.Time ?? string.Empty,
-                        DoctorName = appointment.Doctor ?? string.Empty,
+                        DoctorName = doctorName,
                         Price = appointment.Price,
                         Status = appointment.Status ?? "Ожидает",
                         Comment = appointment.Comment,
@@ -890,6 +940,33 @@ namespace MedicalCenter.Services
             {
                 return null;
             }
+        }
+
+        private static bool IsSamePatient(string leftPhone, string leftName, string rightPhone, string rightName)
+        {
+            var lp = NormalizePhone(leftPhone);
+            var rp = NormalizePhone(rightPhone);
+            if (!string.IsNullOrWhiteSpace(lp) && !string.IsNullOrWhiteSpace(rp))
+                return lp == rp;
+
+            return NormalizeText(leftName) == NormalizeText(rightName);
+        }
+
+        private static string NormalizePhone(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return string.Empty;
+
+            var digits = new string((phone ?? string.Empty).Where(char.IsDigit).ToArray());
+            if (digits.Length > 10)
+                digits = digits.Substring(digits.Length - 10);
+
+            return digits;
+        }
+
+        private static string NormalizeText(string text)
+        {
+            return (text ?? string.Empty).Trim().ToUpperInvariant();
         }
     }
 }

@@ -238,8 +238,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\cursor.cur" />
-    <Resource Include="Assets\icon.ico" />
+    <Resource Include="Assets\arrow.cur" />
+    <Resource Include="Assets\MedCenter.ico" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

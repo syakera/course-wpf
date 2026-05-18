@@ -2,6 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Регистрация"
+        Icon="/Assets/MedCenter.ico"
+        Cursor="/Assets/arrow.cur"
         Width="780" Height="560"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen">

@@ -12,9 +12,9 @@ DEBUG;TRACE
 C:\LABS\KursachOOP\MedicalCenter\App.xaml
 16763266427
 
-68-149028299
+691872795426
 20-1700108746
 Strings\Strings.ru.xaml;Strings\Strings.en.xaml;Styles\AppStyles.xaml;Themes\ThemeLight.xaml;Views\AddEditWindow.xaml;Views\AppointmentsWindow.xaml;Views\BookingWindow.xaml;Views\DbTablesWindow.xaml;Views\DoctorManagementWindow.xaml;Views\DoctorScheduleWindow.xaml;Views\DoctorsWindow.xaml;Views\LoginWindow.xaml;Views\MainWindow.xaml;Views\ProfileWindow.xaml;Views\RegisterWindow.xaml;Views\TestWindow.xaml;
 
-False
+True
 

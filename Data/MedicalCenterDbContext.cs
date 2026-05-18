@@ -108,25 +108,22 @@ namespace MedicalCenter.Data
         public override int SaveChanges()
         {
             var pendingAudit = CaptureAppointmentAuditEntries();
-            int affected = base.SaveChanges();
-            WriteAuditEntries(pendingAudit);
-            return affected;
+            PrepareAuditEntries(pendingAudit);
+            return base.SaveChanges();
         }
 
         public override async Task<int> SaveChangesAsync()
         {
             var pendingAudit = CaptureAppointmentAuditEntries();
-            int affected = await base.SaveChangesAsync().ConfigureAwait(false);
-            await WriteAuditEntriesAsync(pendingAudit, CancellationToken.None).ConfigureAwait(false);
-            return affected;
+            PrepareAuditEntries(pendingAudit);
+            return await base.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
             var pendingAudit = CaptureAppointmentAuditEntries();
-            int affected = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            await WriteAuditEntriesAsync(pendingAudit, cancellationToken).ConfigureAwait(false);
-            return affected;
+            PrepareAuditEntries(pendingAudit);
+            return await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private List<PendingAppointmentAudit> CaptureAppointmentAuditEntries()
@@ -148,7 +145,7 @@ namespace MedicalCenter.Data
                 .ToList();
         }
 
-        private void WriteAuditEntries(List<PendingAppointmentAudit> pendingAudit)
+        private void PrepareAuditEntries(List<PendingAppointmentAudit> pendingAudit)
         {
             if (pendingAudit.Count == 0)
                 return;
@@ -163,27 +160,6 @@ namespace MedicalCenter.Data
                     ChangedAt = DateTime.Now
                 });
             }
-
-            base.SaveChanges();
-        }
-
-        private async Task WriteAuditEntriesAsync(List<PendingAppointmentAudit> pendingAudit, CancellationToken cancellationToken)
-        {
-            if (pendingAudit.Count == 0)
-                return;
-
-            foreach (var item in pendingAudit)
-            {
-                AuditLog.Add(new AuditLogEntity
-                {
-                    EntityName = "Appointment",
-                    EntityId = ResolveAppointmentId(item.Entry),
-                    ActionType = item.ActionType,
-                    ChangedAt = DateTime.Now
-                });
-            }
-
-            await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private static int? ResolveAppointmentId(DbEntityEntry<AppointmentEntity> entry)

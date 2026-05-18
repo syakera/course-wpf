@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 using MedicalCenter.Services;
 using MedicalCenter.Views;  
@@ -64,6 +65,7 @@ namespace MedicalCenter
             {
                 string dataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
                 AppDomain.CurrentDomain.SetData("DataDirectory", dataDir);
+                TryApplyGlobalCursor();
 
                 // Force DB initialization on app startup.
                 _ = new MedicalServiceService();
@@ -108,6 +110,20 @@ namespace MedicalCenter
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             e.SetObserved();
+        }
+
+        private static void TryApplyGlobalCursor()
+        {
+            try
+            {
+                var cursorPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "arrow.cur");
+                if (File.Exists(cursorPath))
+                    Mouse.OverrideCursor = new Cursor(cursorPath);
+            }
+            catch
+            {
+                // Keep startup robust if custom cursor cannot be loaded.
+            }
         }
     }
 }

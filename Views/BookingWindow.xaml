@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="Запись на приём"
+        Icon="/Assets/MedCenter.ico"
+        Cursor="/Assets/arrow.cur"
         Width="540" Height="720"
         MinWidth="500" MinHeight="600"
         WindowStartupLocation="CenterOwner">
