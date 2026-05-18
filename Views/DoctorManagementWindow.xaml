@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Управление врачами"
-        Width="960" Height="640"
+        Width="1007" Height="752"
         WindowStartupLocation="CenterOwner">
     <DockPanel Background="{DynamicResource BgDarkBrush}">
         <!-- Header -->
@@ -38,7 +38,7 @@
                 Background="{DynamicResource BgPanelBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"
-                Padding="20,12">
+                Padding="20,12" Height="71">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Отмена"
                         Style="{StaticResource GhostButtonStyle}"
@@ -58,8 +58,8 @@
 
         <Grid Margin="20,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="320"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="382"/>
+                <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
             <!-- Doctor list -->
@@ -118,7 +118,7 @@
             </Border>
 
             <!-- Detail -->
-            <StackPanel Grid.Column="1" Margin="16,0,0,0">
+            <StackPanel Grid.Column="1" Margin="52,0,0,0">
                 <TextBlock Text="ФИО" FontSize="11" FontWeight="Bold"
                            Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
                 <TextBox Padding="8,6" FontSize="13" Margin="0,0,0,10"

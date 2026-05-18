@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Win32;
 using MedicalCenter.Commands;
 using MedicalCenter.Models;
 using MedicalCenter.Services;
@@ -19,6 +20,7 @@ namespace MedicalCenter.ViewModels
         private string _fullName;
         private string _phone;
         private string _email;
+        private string _avatarPath;
         private string _selectedLanguage;
 
         public string FullName
@@ -45,9 +47,23 @@ namespace MedicalCenter.ViewModels
             set { _selectedLanguage = value; OnPropertyChanged(nameof(SelectedLanguage)); }
         }
 
+        public string AvatarPath
+        {
+            get => _avatarPath;
+            set
+            {
+                _avatarPath = value;
+                OnPropertyChanged(nameof(AvatarPath));
+                OnPropertyChanged(nameof(HasAvatar));
+            }
+        }
+
+        public bool HasAvatar => !string.IsNullOrWhiteSpace(AvatarPath);
+
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
         public ICommand ApplyLanguageCommand { get; }
+        public ICommand SelectAvatarCommand { get; }
 
         public ProfileViewModel(UserProfile profile)
         {
@@ -56,11 +72,13 @@ namespace MedicalCenter.ViewModels
             FullName = profile.FullName;
             Phone = profile.Phone;
             Email = profile.Email;
+            AvatarPath = profile.AvatarPath;
             SelectedLanguage = App.CurrentLanguageCode;
 
             SaveCommand = new RelayCommand(Save);
             CancelCommand = new RelayCommand(Cancel);
             ApplyLanguageCommand = new RelayCommand(_ => App.SwitchLanguage(SelectedLanguage));
+            SelectAvatarCommand = new RelayCommand(_ => SelectAvatar());
         }
 
         private void Save(object parameter)
@@ -91,12 +109,14 @@ namespace MedicalCenter.ViewModels
                     Role = _profile.Role,
                     DisplayName = FullName,
                     Phone = normalizedPhone,
-                    Email = normalizedEmail
+                    Email = normalizedEmail,
+                    AvatarPath = AvatarPath
                 });
 
                 _profile.FullName = FullName;
                 _profile.Phone = normalizedPhone;
                 _profile.Email = normalizedEmail;
+                _profile.AvatarPath = AvatarPath;
 
                 App.SwitchLanguage(SelectedLanguage);
             }
@@ -111,6 +131,21 @@ namespace MedicalCenter.ViewModels
             {
                 win.DialogResult = true;
                 win.Close();
+            }
+        }
+
+        private void SelectAvatar()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Выберите аватар",
+                Filter = "Изображения (*.png;*.jpg;*.jpeg;*.webp)|*.png;*.jpg;*.jpeg;*.webp|Все файлы (*.*)|*.*",
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                AvatarPath = dialog.FileName;
             }
         }
 

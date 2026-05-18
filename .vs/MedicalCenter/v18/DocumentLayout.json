@@ -1,7 +1,24 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\LABS\\KursachOOP\\MedicalCenter\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B15121BF-0766-4CE9-A50C-1CC81A13FAA2}|MedicalCenter.csproj|c:\\labs\\kursachoop\\medicalcenter\\views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{B15121BF-0766-4CE9-A50C-1CC81A13FAA2}|MedicalCenter.csproj|solutionrelative:views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B15121BF-0766-4CE9-A50C-1CC81A13FAA2}|MedicalCenter.csproj|C:\\LABS\\KursachOOP\\MedicalCenter\\views\\doctormanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{B15121BF-0766-4CE9-A50C-1CC81A13FAA2}|MedicalCenter.csproj|solutionrelative:views\\doctormanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B15121BF-0766-4CE9-A50C-1CC81A13FAA2}|MedicalCenter.csproj|C:\\LABS\\KursachOOP\\MedicalCenter\\views\\appointmentswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{B15121BF-0766-4CE9-A50C-1CC81A13FAA2}|MedicalCenter.csproj|solutionrelative:views\\appointmentswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B15121BF-0766-4CE9-A50C-1CC81A13FAA2}|MedicalCenter.csproj|C:\\LABS\\KursachOOP\\MedicalCenter\\views\\loginwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{B15121BF-0766-4CE9-A50C-1CC81A13FAA2}|MedicalCenter.csproj|solutionrelative:views\\loginwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,11 +26,56 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DoctorManagementWindow.xaml",
+              "DocumentMoniker": "C:\\LABS\\KursachOOP\\MedicalCenter\\Views\\DoctorManagementWindow.xaml",
+              "RelativeDocumentMoniker": "Views\\DoctorManagementWindow.xaml",
+              "ToolTip": "C:\\LABS\\KursachOOP\\MedicalCenter\\Views\\DoctorManagementWindow.xaml",
+              "RelativeToolTip": "Views\\DoctorManagementWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-18T09:32:44.925Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\LABS\\KursachOOP\\MedicalCenter\\Views\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "Views\\MainWindow.xaml",
+              "ToolTip": "C:\\LABS\\KursachOOP\\MedicalCenter\\Views\\MainWindow.xaml",
+              "RelativeToolTip": "Views\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-18T09:26:27.411Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AppointmentsWindow.xaml",
+              "DocumentMoniker": "C:\\LABS\\KursachOOP\\MedicalCenter\\Views\\AppointmentsWindow.xaml",
+              "RelativeDocumentMoniker": "Views\\AppointmentsWindow.xaml",
+              "ToolTip": "C:\\LABS\\KursachOOP\\MedicalCenter\\Views\\AppointmentsWindow.xaml",
+              "RelativeToolTip": "Views\\AppointmentsWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-18T09:20:30.871Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "LoginWindow.xaml",
+              "DocumentMoniker": "C:\\LABS\\KursachOOP\\MedicalCenter\\Views\\LoginWindow.xaml",
+              "RelativeDocumentMoniker": "Views\\LoginWindow.xaml",
+              "ToolTip": "C:\\LABS\\KursachOOP\\MedicalCenter\\Views\\LoginWindow.xaml",
+              "RelativeToolTip": "Views\\LoginWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-18T09:17:21.405Z"
             }
           ]
         }

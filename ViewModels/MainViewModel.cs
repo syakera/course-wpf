@@ -143,6 +143,8 @@ namespace MedicalCenter.ViewModels
         }
 
         public string CurrentUserName => _currentUser?.FullName ?? "";
+        public string CurrentUserAvatarPath => _currentUser?.AvatarPath;
+        public bool HasCurrentUserAvatar => !string.IsNullOrWhiteSpace(CurrentUserAvatarPath);
         public bool CanUndo => _undoStack.Count > 0;
         public bool CanRedo => _redoStack.Count > 0;
 
@@ -187,7 +189,8 @@ namespace MedicalCenter.ViewModels
                     ? _currentAccount.Username
                     : _currentAccount.DisplayName,
                 Phone = _currentAccount.Phone ?? string.Empty,
-                Email = _currentAccount.Email ?? string.Empty
+                Email = _currentAccount.Email ?? string.Empty,
+                AvatarPath = _currentAccount.AvatarPath
             };
 
             AddCommand = new RelayCommand(_ => OpenAddWindow(), _ => IsAdmin);
@@ -230,7 +233,11 @@ namespace MedicalCenter.ViewModels
             AttachSafeOwner(win);
 
             if (win.ShowDialog() == true)
+            {
                 OnPropertyChanged(nameof(CurrentUserName));
+                OnPropertyChanged(nameof(CurrentUserAvatarPath));
+                OnPropertyChanged(nameof(HasCurrentUserAvatar));
+            }
         }
 
         private void RebuildCategories()

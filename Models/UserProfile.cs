@@ -10,6 +10,7 @@ namespace MedicalCenter.Models
         private string _fullName;
         private string _phone;
         private string _email;
+        private string _avatarPath;
 
         public int Id
         {
@@ -74,6 +75,17 @@ namespace MedicalCenter.Models
                 if (_email == value) return;
                 _email = value;
                 OnPropertyChanged(nameof(Email));
+            }
+        }
+
+        public string AvatarPath
+        {
+            get => _avatarPath;
+            set
+            {
+                if (_avatarPath == value) return;
+                _avatarPath = value;
+                OnPropertyChanged(nameof(AvatarPath));
             }
         }
 

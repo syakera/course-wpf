@@ -27,6 +27,50 @@
                 CornerRadius="8"
                 Padding="16">
             <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <Border Width="64"
+                            Height="64"
+                            CornerRadius="32"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            Background="{DynamicResource BgInputBrush}">
+                        <Grid>
+                            <Image Source="{Binding AvatarPath}" Stretch="UniformToFill">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                            <TextBlock Text="👤"
+                                       FontSize="26"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <Button Content="Выбрать аватар"
+                                Command="{Binding SelectAvatarCommand}"
+                                Style="{StaticResource GhostButtonStyle}"/>
+                    </StackPanel>
+                </StackPanel>
+
                 <TextBlock Text="{DynamicResource ProfileFullName}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
                 <TextBox Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
 
