@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -26,32 +25,6 @@ namespace MedicalCenter.ViewModels
         {
             "Терапия", "Кардиология", "Неврология", "Стоматология", "Физиотерапия", "Диагностика", "Хирургия"
         };
-
-        public string ImagePathText
-        {
-            get
-            {
-                if (Service.Images != null && Service.Images.Count > 0)
-                    return string.Join("; ", Service.Images);
-                return string.IsNullOrWhiteSpace(Service.SpecialistImage) ? "" : "[image in database]";
-            }
-            set
-            {
-                var parsed = string.IsNullOrWhiteSpace(value)
-                    ? new List<string>()
-                    : new List<string>(value.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(s => s.Trim()));
-
-                Service.Images = parsed;
-                var firstPath = parsed.FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(firstPath) && File.Exists(firstPath))
-                {
-                    byte[] imageBytes = File.ReadAllBytes(firstPath);
-                    Service.SpecialistImage = Convert.ToBase64String(imageBytes);
-                }
-                OnPropertyChanged(nameof(ImagePathText));
-            }
-        }
 
         public string TimeSlotsText
         {

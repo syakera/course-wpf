@@ -498,9 +498,21 @@ namespace MedicalCenter.ViewModels
         {
             try
             {
-                var appointments = _service.GetAppointmentsAsync().GetAwaiter().GetResult();
+                var patientKey = string.IsNullOrWhiteSpace(_currentUser?.Phone)
+                    ? _currentUser?.FullName
+                    : _currentUser.Phone;
+
+                if (string.IsNullOrWhiteSpace(patientKey))
+                {
+                    UpcomingAppointment = null;
+                    return;
+                }
+
+                var appointments = _service.GetAppointmentsForPatientAsync(patientKey).GetAwaiter().GetResult();
+                var now = DateTime.Now;
                 UpcomingAppointment = appointments
                     .Where(a => a.IsActive)
+                    .Where(a => ComposeAppointmentDateTime(a) >= now)
                     .OrderBy(a => ComposeAppointmentDateTime(a))
                     .FirstOrDefault();
             }

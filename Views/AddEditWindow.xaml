@@ -141,8 +141,6 @@
 
                 <!-- Popular + Discount -->
                 <StackPanel Grid.Row="4" Grid.Column="2" Margin="0,0,0,12">
-                    <CheckBox Content="Популярно" IsChecked="{Binding Service.IsPopular}"
-                              Margin="0,0,0,8"/>
                     <CheckBox Content="Скидка" IsChecked="{Binding Service.HasDiscount}"/>
                 </StackPanel>
 
@@ -179,59 +177,39 @@
                                FontSize="10" Margin="0,3,0,0" Foreground="{DynamicResource TextSecondaryBrush}"/>
                 </StackPanel>
 
-                <!-- Image Path -->
-                <StackPanel Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,12">
-                    <TextBlock Text="Изображения (через ;)" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
-                    <TextBox x:Name="ImgPathBox" Height="32"
-                             Text="{Binding ImagePathText, UpdateSourceTrigger=PropertyChanged}"
-                             Padding="8,6"/>
-                    <Border x:Name="DropZone"
-                            AllowDrop="True"
-                            Drop="DropZone_Drop"
-                            DragOver="DropZone_DragOver"
-                            DragLeave="DropZone_DragLeave"
-                            Height="48" Margin="0,4,0,0"
-                            CornerRadius="4" BorderThickness="1"
-                            BorderBrush="{DynamicResource BorderBrush}"
-                            Background="{DynamicResource BgDarkBrush}">
-                        <TextBlock x:Name="DropHint"
-                                   Text="📁 Перетащите изображения сюда"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    </Border>
+                <!-- Form actions -->
+                <StackPanel Grid.Row="8"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="3"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,8,0,4">
+                    <Button Content="Отмена"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Margin="0,0,8,0"
+                            Width="103"
+                            Height="32"
+                            Command="{Binding CancelCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+                    <Button Content="Сохранить"
+                            Width="111"
+                            Height="34"
+                            Command="{Binding SaveCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </StackPanel>
 
             </Grid>
         </ScrollViewer>
-
-        <!-- Buttons Footer -->
-        <Border DockPanel.Dock="Bottom"
-                Background="{DynamicResource BgPanelBrush}"
-                BorderBrush="{DynamicResource BorderBrush}"
-                BorderThickness="0,1,0,0"
-                Padding="24,12">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="right">
-                <Button Content="Отмена"
-                        Style="{StaticResource GhostButtonStyle}"
-                        Command="{Binding CancelCommand}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Height="32" Width="103"/>
-                <Button Content="Сохранить"
-                        Command="{Binding SaveCommand}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Height="34" Width="111">
-                    <Button.Style>
-                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
-                            <Setter Property="Visibility" Value="Visible"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
-            </StackPanel>
-        </Border>
     </DockPanel>
 </Window>
